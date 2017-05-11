@@ -12,4 +12,4 @@ For questions or issues please use the [Google Group](https://groups.google.com/
 Can run network on images in imagelist.txt and saving the detection in txt file
 
 Example command:dfa
-./darknet detector test_file cfg/combine9k.data cfg/yolo9000.cfg data/yolo9000.weights imgs_v/imagelist.txt -thresh 0.01 -outdir img_out_cmusfefasdfsdf
+./darknet detector test_file cfg/combine9k.data cfg/yolo9000.cfg data/yolo9000.weights imgs_v/imagelist.txt -thresh 0.01 -outdir img_out_cmu
