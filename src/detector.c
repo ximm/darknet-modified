@@ -588,6 +588,34 @@ void validate_detector_recall(char *cfgfile, char *weightfile)
     }
 }
 
+void write_detections(image im, int num, float thresh, box *boxes, float **probs, char **names, image **alphabet, int classes, char *save_name)
+{
+    int i;
+    FILE *f_img;
+    f_img = fopen(save_name, "w");
+
+    for(i = 0; i < num; ++i){
+        int class = max_index(probs[i], classes);
+        float prob = probs[i][class];
+        //write the class only if its prob is greater than zero
+        if(prob){
+            box b = boxes[i];
+
+            int left  = (b.x-b.w/2.)*im.w;
+            int right = (b.x+b.w/2.)*im.w;
+            int top   = (b.y-b.h/2.)*im.h;
+            int bot   = (b.y+b.h/2.)*im.h;
+
+            if(left < 0) left = 0;
+            if(right > im.w-1) right = im.w-1;
+            if(top < 0) top = 0;
+            if(bot > im.h-1) bot = im.h-1;
+            fprintf(f_img, "%s %f %d %d %d %d\n", names[class], prob, left, right, top, bot);
+        }
+    }
+    fclose(f_img);
+}
+
 void test_detector_file(char *datacfg, char *cfgfile, char *weightfile, char *filelistname, float thresh, float hier_thresh, char *outfile, int fullscreen)
 {
     list *options = read_data_cfg(datacfg);
@@ -669,8 +697,11 @@ void test_detector_file(char *datacfg, char *cfgfile, char *weightfile, char *fi
             imgName += dir_len;
             //concatenate and give to save_image
             strcat(saveName, imgName);
-            printf("%s: saving as \n", saveName); 
+            printf("saving as: %s \n", saveName); 
             save_image(im, saveName);
+            //write detections to txt file
+            strcat(saveName, "_dets.txt");
+            write_detections(im, l.w*l.h*l.n, thresh, boxes, probs, names, alphabet, l.classes, saveName);
         }
         else{
             save_image(im, "predictions");
@@ -690,6 +721,7 @@ void test_detector_file(char *datacfg, char *cfgfile, char *weightfile, char *fi
         free(boxes);
         free_ptrs((void **)probs, l.w*l.h*l.n);
         //if (filename) break;
+        printf("\n");
     }
 }
 void test_detector(char *datacfg, char *cfgfile, char *weightfile, char *filename, float thresh, float hier_thresh, char *outfile, int fullscreen)
